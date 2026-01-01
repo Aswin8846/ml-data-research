@@ -1,0 +1,55 @@
+# Dataset configurations
+storage:
+  local_path: "./data"
+  s3_bucket: null  # Will add when AWS is ready
+  s3_prefix: "datasets"
+
+tpc_h:
+  scales:
+    small: 0.1    # ~100MB
+    medium: 1     # ~1GB
+    large: 10     # ~10GB
+  tables:
+    - customer
+    - lineitem
+    - nation
+    - orders
+    - part
+    - partsupp
+    - region
+    - supplier
+  formats:
+    row_based: "csv"
+    columnar: "parquet"
+
+tpc_ds:
+  scales:
+    small: 1
+    medium: 10
+    large: 100
+  # Similar structure
+
+kaggle:
+  datasets:
+    - name: "titanic"
+      competition: "titanic"
+      size_mb: 50
+      description: "Classification task"
+    
+    - name: "house_prices"
+      competition: "house-prices-advanced-regression-techniques"
+      size_mb: 100
+      description: "Regression task"
+    
+    - name: "mnist"
+      dataset: "hojjatk/mnist-dataset"
+      size_mb: 50
+      description: "Image classification"
+
+processing:
+  chunk_sizes: [1000, 10000, 100000]
+  operations:
+    - filter
+    - aggregate
+    - join
+    - sort

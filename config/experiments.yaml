@@ -1,0 +1,38 @@
+# Experiment configurations
+experiments:
+  - name: "filter_comparison"
+    description: "Compare filtering performance"
+    datasets: ["tpc_h_small", "tpc_h_medium"]
+    operations:
+      - type: "filter"
+        condition: "l_shipdate > '1995-01-01'"
+    metrics:
+      - execution_time
+      - memory_usage
+      - cpu_usage
+      - io_operations
+
+  - name: "aggregation_comparison"
+    description: "Compare GROUP BY performance"
+    datasets: ["tpc_h_small", "tpc_h_medium"]
+    operations:
+      - type: "aggregate"
+        query: "SELECT l_returnflag, COUNT(*) FROM lineitem GROUP BY l_returnflag"
+
+  - name: "join_comparison"
+    description: "Compare JOIN performance"
+    datasets: ["tpc_h_small"]
+    operations:
+      - type: "join"
+        tables: ["orders", "lineitem"]
+        condition: "o_orderkey = l_orderkey"
+
+output:
+  formats: ["html", "pdf", "json"]
+  charts:
+    - type: "bar"
+      title: "Execution Time Comparison"
+    - type: "line"
+      title: "Memory Usage Over Time"
+    - type: "heatmap"
+      title: "Operation Performance Matrix"
