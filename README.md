@@ -34,15 +34,11 @@ This project investigates the performance differences between row-based and colu
 git clone https://github.com/Aswin8846/ml-data-research.git
 cd ml-data-research
 
-# Create virtual environment
-python -m venv venv
-# and then - for mac os and linux
-source venv/bin/activate  
-# On Windows: 
-venv\Scripts\activate
+# Install dependencies using uv (fast, reliable)
+uv sync
 
-# Install dependencies
-pip install -r requirements.txt
+# Or manually with uv pip
+uv pip install -r requirements.txt
 ```
 
 ### **Run Complete Experiment**
@@ -111,12 +107,22 @@ The project generates:
 
 ---
 
+## 🌐 **Cloud Storage Support**
+
+Supports multiple data formats from Hetzner Object Storage:
+- ✅ **Parquet** - Columnar, compressed (recommended)
+- ✅ **TBL** - TPC-H pipe-delimited format
+- ✅ **DAT** - Custom-delimited format
+- ✅ **CSV** - Standard comma-separated values
+
+See `HETZNER_DATA_FORMATS.md` for details.
+
 ## 🔮 **Future Work**
 
-- [ ] Scale to 1GB and 10GB datasets (AWS S3)
 - [ ] Add TPC-DS benchmark
 - [ ] Include real ML datasets (Kaggle)
-- [ ] Test distributed processing
+- [ ] Test distributed processing (Dask)
+- [ ] GPU acceleration
 
 ---
 

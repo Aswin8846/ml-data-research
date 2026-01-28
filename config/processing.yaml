@@ -1,0 +1,182 @@
+# Processing Configuration
+# Controls how data is processed based on dataset size and available resources
+
+processing:
+  # Processor selection: pandas, duckdb, chunked, remote
+  # - pandas: Original in-memory (good for MB data, not for GB+)
+  # - duckdb: SQL query engine (10-100x faster, uses 2-3x less memory)
+  # - chunked: Stream in batches (good for very large files)
+  # - remote: Cloud storage with chunked reading (for Hetzner S3)
+  processor: "duckdb"
+  
+  # TPC-H scale factor: 0.1 (100MB), 1 (10GB), 10 (100GB), etc.
+  # The larger the scale factor, the more data is generated
+  scale_factor: 0.1
+  
+  # Chunk size for chunked/remote processors (rows per batch)
+  # Larger = faster but more memory; smaller = slower but less memory
+  # Default 100k is good for 10GB datasets with 16GB RAM
+  chunk_size: 100000
+  
+  # Maximum memory to keep in RAM (soft limit, for chunked processing)
+  # If exceeded, results are spilled to disk
+  max_memory_mb: 2048
+  
+  # DuckDB settings
+  duckdb:
+    # Use in-memory database (fast) vs file-based (persistent, slower)
+    in_memory_db: true
+    
+    # Memory limit for DuckDB (should be less than max_memory_mb)
+    memory_limit_gb: 16
+    
+    # Number of threads for parallel processing
+    threads: 4
+
+# Data directories
+data:
+  base_dir: "./data"
+  raw_dir: "./data/raw"
+  output_dir: "./outputs"
+  
+  # TPC-H generations to have available locally
+  # Comment out unused ones to save space
+  local_datasets:
+    - scale_factor: 0.1  # 100MB
+      format: "parquet"
+      location: "tpc_h_sf0.1"
+    # Uncomment when ready to generate locally
+    # - scale_factor: 1    # 10GB (takes ~10min to generate)
+    #   format: "parquet"
+    #   location: "tpc_h_sf1"
+
+# Hetzner Object Storage (S3-compatible)
+hetzner:
+  # Set to true to enable Hetzner integration
+  # Credentials should be in .env file (not in git!)
+  enabled: false
+  
+  # Hetzner endpoint (fsn1, nbg1, etc. - adjust to your region)
+  endpoint: "${HETZNER_ENDPOINT}"
+  
+  # S3 credentials (load from environment)
+  access_key: "${HETZNER_ACCESS_KEY}"
+  secret_key: "${HETZNER_SECRET_KEY}"
+  
+  # Bucket name
+  bucket: "ml-data-research"
+  
+  # Datasets available in Hetzner
+  # These are pre-generated TPC-H datasets stored in S3
+  available_datasets:
+    tpc_h_sf0.1:
+      path: "tpc_h_sf0.1/parquet/"
+      size_gb: 0.1
+      tables: 8
+    tpc_h_sf1:
+      path: "tpc_h_sf1/parquet/"
+      size_gb: 10
+      tables: 8
+    tpc_h_sf10:
+      path: "tpc_h_sf10/parquet/"
+      size_gb: 100
+      tables: 8
+
+# Metrics collection
+metrics:
+  # Sample interval for system metrics (seconds)
+  sample_interval: 0.1
+  
+  # What to track
+  track_io: true
+  track_memory: true
+  track_cpu: true
+  
+  # Save metrics to JSON
+  save_results: true
+  output_dir: "./outputs/metrics"
+
+# Experiment configuration
+experiments:
+  # Operations to benchmark
+  operations:
+    - name: "select_columns"
+      description: "Select 3 columns from lineitem"
+      columns:
+        row: ["l_quantity", "l_extendedprice", "l_discount"]
+        column: ["l_quantity", "l_extendedprice", "l_discount"]
+    
+    - name: "filter_rows"
+      description: "Filter where l_quantity > 30"
+      filters:
+        row: "l_quantity > 30"
+        column: "l_quantity > 30"
+    
+    - name: "aggregate"
+      description: "GROUP BY with SUM and MEAN"
+      aggregation:
+        group_by: ["l_returnflag"]
+        agg_func:
+          l_quantity: "sum"
+          l_extendedprice: "mean"
+    
+    - name: "compute_statistics"
+      description: "Compute statistics on single column"
+      column: "l_extendedprice"
+  
+  # Tables to use
+  tables:
+    - "lineitem"
+
+# Visualization
+visualization:
+  # Chart types to generate
+  chart_types:
+    - "duration_comparison"
+    - "memory_comparison"
+    - "io_comparison"
+    - "performance_heatmap"
+    - "time_series"
+    - "interactive_dashboard"
+  
+  # Output format and style
+  output_format: "html"  # or "png"
+  style: "seaborn"
+  dpi: 300
+
+# Reporting
+reporting:
+  # Report types to generate
+  report_types:
+    - "html"
+    - "markdown"
+    - "json"
+  
+  # Include detailed metrics
+  include_snapshots: true
+  include_analysis: true
+
+# Resource limits (for safety)
+limits:
+  # Max local dataset size to auto-download (MB)
+  max_local_dataset_mb: 5000
+  
+  # Timeout for operations (seconds)
+  operation_timeout_seconds: 3600  # 1 hour
+  
+  # Max file size to read fully into memory (MB)
+  max_full_load_mb: 1000
+  
+  # Warn if memory usage exceeds this (MB)
+  memory_warning_mb: 12000
+
+# Development/debugging
+debug:
+  # Enable verbose logging
+  verbose: false
+  
+  # Save intermediate results
+  save_intermediates: false
+  
+  # Test mode (uses tiny data)
+  test_mode: false
