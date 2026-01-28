@@ -220,20 +220,17 @@ Then enable in `config/processing.yaml`: `hetzner.enabled: true`
 ### Basic Commands
 
 ```bash
-# Default (100MB, DuckDB) - ~3 minutes
-uv run python run_full_experiment.py
-
-# Local 10GB with DuckDB - ~20 minutes
-uv run python run_full_experiment.py --scale-factor 1
-
-# Chunked processor (conservative memory)
-uv run python run_full_experiment.py --processor chunked
-
-# Hetzner 100GB (when credentials added)
+# Run benchmark from Hetzner (with credentials in .env)
 uv run python run_full_experiment.py \
     --scale-factor 10 \
     --data-source hetzner \
     --processor chunked
+
+# Or use DuckDB for faster processing
+uv run python run_full_experiment.py \
+    --scale-factor 10 \
+    --data-source hetzner \
+    --processor duckdb
 
 # Help
 uv run python run_full_experiment.py --help
@@ -343,15 +340,7 @@ for batch in storage.read_auto_format("lineitem.tbl"):
     print(f"Matched: {len(filtered)} rows")
 ```
 
-### Generate 10GB Data
-```python
-from src.ingestion.duckdb_generator import TPCGenerator
-from pathlib import Path
 
-gen = TPCGenerator(Path("./data/raw"))
-gen.generate_tpc_h(scale_factor=1, format="parquet")
-gen.close()
-```
 
 ---
 
@@ -421,12 +410,6 @@ uv sync
 uv run python script.py
 ```
 
-### "Data files not found"
-```bash
-# Generate them
-uv run python run_full_experiment.py --scale-factor 0.1
-```
-
 ### "Out of memory"
 ```bash
 # Use chunked processor
@@ -455,19 +438,7 @@ else:
 
 ## Workflow Examples
 
-### Benchmark 100MB Data
-```bash
-uv sync
-uv run python run_full_experiment.py
-# Results in outputs/reports/performance_report.html
-```
 
-### Benchmark 10GB Locally
-```bash
-uv sync
-uv run python run_full_experiment.py --scale-factor 1 --processor duckdb
-# Takes ~20 minutes total
-```
 
 ### Benchmark 100GB from Hetzner
 ```bash

@@ -12,7 +12,6 @@ import time
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.ingestion.duckdb_generator import TPCGenerator
 from src.processing.row_processor import RowProcessor
 from src.processing.column_processor import ColumnProcessor
 from src.processing.duckdb_processor import DuckDBProcessor
@@ -42,37 +41,7 @@ class ExperimentRunner:
                          f"Choose from: {', '.join(valid_processors)}[/red]")
             sys.exit(1)
     
-    def generate_data(self) -> bool:
-        """Generate TPC-H dataset if needed"""
-        console.print("\n[bold]Step 1: Data Generation[/bold]")
-        
-        parquet_dir = self.data_dir / f"tpc_h_sf{self.scale_factor}" / "parquet"
-        csv_dir = self.data_dir / f"tpc_h_sf{self.scale_factor}" / "csv"
-        
-        if parquet_dir.exists() and csv_dir.exists():
-            console.print("[green]✓ Data already exists[/green]")
-            return True
-        
-        console.print(f"Generating TPC-H dataset (SF={self.scale_factor})...")
-        
-        try:
-            generator = TPCGenerator(output_dir=self.data_dir)
-            
-            # Only generate parquet if using non-pandas processor
-            if self.processor_type != "pandas":
-                generator.generate_tpc_h(scale_factor=self.scale_factor, format="parquet")
-            
-            # Generate CSV for pandas
-            if self.processor_type == "pandas":
-                generator.generate_tpc_h(scale_factor=self.scale_factor, format="csv")
-            
-            generator.close()
-            console.print("[green]✓ Data generation complete[/green]")
-            return True
-            
-        except Exception as e:
-            console.print(f"[red]✗ Data generation failed: {e}[/red]")
-            return False
+
     
     def run_experiments(self) -> bool:
         """Run benchmark experiments"""
@@ -334,7 +303,6 @@ class ExperimentRunner:
         
         # Run steps
         success = (
-            self.generate_data() and
             self.run_experiments() and
             self.generate_visualizations() and
             self.generate_reports()
